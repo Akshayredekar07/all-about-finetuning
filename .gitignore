@@ -50,3 +50,8 @@ runs/
 .cursor-server
 .vscode-server
 .windsurf-server
+
+# IDE files
+.cursor-server/
+.vscode-server/
+.windsurf-server/
