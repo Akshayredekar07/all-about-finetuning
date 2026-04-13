@@ -1,14 +1,12 @@
 # Phase 1 — Transformers
-# Part 4: Trainer + TrainingArguments
-# Part 5: Generation
 
----
+Part 4: Trainer + TrainingArguments & Part 5: Generation
 
-# PART 4: Trainer
 
----
+## **PART 4: Trainer**
 
-## What is Trainer
+
+### What is Trainer
 
 Trainer is HuggingFace's complete training loop. It handles everything:
 gradient computation, optimizer step, evaluation, logging, checkpointing,
@@ -18,17 +16,14 @@ mixed precision, distributed training. You only write the data and the metric fu
 your dataset + your model + TrainingArguments → Trainer → trained model
 ```
 
----
 
-## Installation
+### Installation
 
 ```bash
 pip install transformers torch datasets evaluate accelerate
 ```
 
----
-
-## TrainingArguments — Every Parameter
+### TrainingArguments — Every Parameter
 
 ```python
 from transformers import TrainingArguments
@@ -118,9 +113,7 @@ args = TrainingArguments(
 )
 ```
 
----
-
-## Data Collators
+### Data Collators
 
 Data collators batch individual examples together and apply dynamic padding.
 They sit between the dataset and the model during training.
@@ -144,8 +137,6 @@ collator = DataCollatorWithPadding(
 )
 ```
 
----
-
 ### DataCollatorForSeq2Seq
 
 For summarization, translation, and any encoder-decoder model.
@@ -166,7 +157,6 @@ collator = DataCollatorForSeq2Seq(
 )
 ```
 
----
 
 ### DataCollatorForLanguageModeling
 
@@ -193,7 +183,6 @@ collator_mlm = DataCollatorForLanguageModeling(
 )
 ```
 
----
 
 ### DataCollatorForTokenClassification
 
@@ -213,7 +202,6 @@ collator = DataCollatorForTokenClassification(
 )
 ```
 
----
 
 ## compute_metrics — Custom Evaluation
 
