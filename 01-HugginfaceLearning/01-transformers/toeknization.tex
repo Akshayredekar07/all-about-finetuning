@@ -1,0 +1,583 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[a4paper, top=22mm, bottom=22mm, left=22mm, right=22mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\setlength{\headheight}{22pt}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\usepackage{mdframed}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+\tcbuselibrary{skins, breakable, listings}
+
+% ── Colour palette ────────────────────────────────────────────────────────────
+\definecolor{primaryBlue}{HTML}{1D4ED8}
+\definecolor{lightBlue}{HTML}{DBEAFE}
+\definecolor{accentPurple}{HTML}{6D28D9}
+\definecolor{lightPurple}{HTML}{EDE9FE}
+\definecolor{codeGreen}{HTML}{15803D}
+\definecolor{codeBg}{HTML}{F1F5F9}
+\definecolor{alertRed}{HTML}{B91C1C}
+\definecolor{lightRed}{HTML}{FEE2E2}
+\definecolor{amber}{HTML}{B45309}
+\definecolor{lightAmber}{HTML}{FEF3C7}
+\definecolor{teal}{HTML}{0F766E}
+\definecolor{lightTeal}{HTML}{CCFBF1}
+\definecolor{darkText}{HTML}{1E293B}
+\definecolor{mutedText}{HTML}{64748B}
+\definecolor{borderGray}{HTML}{CBD5E1}
+\definecolor{sectionBar}{HTML}{3B82F6}
+\definecolor{headerBg}{HTML}{1E3A5F}
+\definecolor{noteYellow}{HTML}{FFFBEB}
+\definecolor{noteYellowBorder}{HTML}{F59E0B}
+
+% ── Page style ────────────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{sectionBar}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[L]{\small\color{mutedText}\textbf{Chat Templates in Transformers}}
+\fancyhead[R]{\small\color{mutedText}apply\_chat\_template() — Complete Notes}
+\fancyfoot[C]{\small\color{mutedText}\thepage}
+
+% ── Section formatting ────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\color{primaryBlue}\large\bfseries}
+  {}
+  {0em}
+  {\colorbox{lightBlue}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\color{primaryBlue}\thesection\quad #1}}}
+  [\vspace{2pt}]
+
+\titleformat{\subsection}
+  {\color{accentPurple}\normalsize\bfseries}
+  {\thesubsection}
+  {0.5em}
+  {}
+  [\vspace{1pt}\color{accentPurple}\hrule height 0.5pt\vspace{3pt}]
+
+\titlespacing*{\section}{0pt}{14pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{4pt}
+
+% ── Code listing style ────────────────────────────────────────────────────────
+\lstdefinestyle{pycode}{
+  language=Python,
+  backgroundcolor=\color{codeBg},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{primaryBlue}\bfseries,
+  stringstyle=\color{codeGreen},
+  commentstyle=\color{mutedText}\itshape,
+  numberstyle=\tiny\color{mutedText},
+  numbers=left,
+  numbersep=8pt,
+  frame=l,
+  framesep=4pt,
+  rulecolor=\color{sectionBar},
+  xleftmargin=14pt,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  morekeywords={apply_chat_template,AutoTokenizer,AutoModelForCausalLM,model,tokenizer,messages,outputs,generate,decode},
+  literate={<}{{\textless}}1 {>}{{\textgreater}}1 {|}{{\textbar}}1,
+}
+
+\lstdefinestyle{chatml}{
+  backgroundcolor=\color{codeBg},
+  basicstyle=\ttfamily\small,
+  frame=l,
+  framesep=4pt,
+  rulecolor=\color{accentPurple},
+  xleftmargin=14pt,
+  breaklines=true,
+  showstringspaces=false,
+}
+
+% ── Custom boxes ──────────────────────────────────────────────────────────────
+\tcbset{
+  notebox/.style={
+    colback=noteYellow, colframe=noteYellowBorder,
+    fonttitle=\bfseries\small, title=#1,
+    left=6pt, right=6pt, top=4pt, bottom=4pt,
+    breakable, arc=3pt
+  },
+  alertbox/.style={
+    colback=lightRed, colframe=alertRed,
+    fonttitle=\bfseries\small\color{white},
+    coltitle=white, colbacktitle=alertRed,
+    title=#1, left=6pt, right=6pt, top=4pt, bottom=4pt,
+    breakable, arc=3pt
+  },
+  tipbox/.style={
+    colback=lightTeal, colframe=teal,
+    fonttitle=\bfseries\small\color{white},
+    coltitle=white, colbacktitle=teal,
+    title=#1, left=6pt, right=6pt, top=4pt, bottom=4pt,
+    breakable, arc=3pt
+  },
+  defbox/.style={
+    colback=lightPurple, colframe=accentPurple,
+    left=6pt, right=6pt, top=4pt, bottom=4pt,
+    breakable, arc=3pt
+  },
+}
+
+% ── Hyperref ──────────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=primaryBlue,
+  urlcolor=teal,
+  pdftitle={Chat Templates in Transformers},
+  pdfauthor={AI Engineering Notes},
+}
+
+% ── Helpers ───────────────────────────────────────────────────────────────────
+\newcommand{\kw}[1]{\texttt{\color{primaryBlue}\bfseries #1}}
+\newcommand{\val}[1]{\texttt{\color{codeGreen}#1}}
+\newcommand{\tok}[1]{\texttt{\color{accentPurple}#1}}
+\newcommand{\api}[1]{\texttt{\color{teal}#1}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ── Title block ───────────────────────────────────────────────────────────────
+\begin{tcolorbox}[
+  colback=headerBg, colframe=headerBg,
+  coltext=white, arc=6pt,
+  left=16pt, right=16pt, top=12pt, bottom=12pt
+]
+  {\LARGE\bfseries Chat Templates in Transformers}\\[6pt]
+  {\large\color{lightBlue} \texttt{apply\_chat\_template()} --- Complete Engineering Notes}\\[4pt]
+  {\small\color{borderGray} HuggingFace Transformers $\cdot$ ChatML $\cdot$ SmolLM2 $\cdot$ Qwen2.5 $\cdot$ Llama-3 $\cdot$ Production Patterns}
+\end{tcolorbox}
+
+\vspace{6pt}
+
+% ── TOC ───────────────────────────────────────────────────────────────────────
+{\small\color{mutedText}
+\textbf{Contents:}
+\S1 What \& Why \quad
+\S2 API Reference \quad
+\S3 ChatML Format \quad
+\S4 Dry-Run Walkthrough \quad
+\S5 Cross-Model Comparison \quad
+\S6 Multimodal \quad
+\S7 Production Patterns \quad
+\S8 Pro Tips
+}
+
+\vspace{4pt}
+\noindent\color{borderGray}\rule{\linewidth}{0.4pt}
+\vspace{2pt}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{What \& Why}
+% ═════════════════════════════════════════════════════════════════════════════
+
+Modern instruction-tuned LLMs are \textbf{not} trained on raw text. They are fine-tuned on structured conversations with role markers, special tokens, and precise formatting. Feeding unformatted text to an instruction model produces garbage output even if the content is correct.
+
+\textbf{Chat templates} solve this by shipping a \textbf{Jinja2 template string} inside every model's \texttt{tokenizer\_config.json}. The \api{apply\_chat\_template()} method renders your \texttt{messages} list into the exact prompt format the model was trained on --- automatically, across any model family.
+
+\begin{tcolorbox}[defbox]
+  \textbf{Why not just write format strings manually?}\\
+  Each model family uses a different format (ChatML, Llama-3 Header tokens, Mistral \texttt{[INST]}, Zephyr \texttt{<|system|>}). Manual code breaks across models and must be updated with every new release. Templates are self-contained and versioned with the tokenizer.
+\end{tcolorbox}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{API Reference --- \texttt{apply\_chat\_template()}}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\subsection{Function Signature}
+
+\begin{lstlisting}[style=pycode]
+output = tokenizer.apply_chat_template(
+    messages,                      # List[Dict[str, str]]  (required)
+    tokenize=True,                 # False -> str  |  True -> BatchEncoding
+    return_tensors="pt",           # "pt" | "tf" | "np" (only when tokenize=True)
+    add_generation_prompt=True,    # appends <|im_start|>assistant\n
+    return_dict=True,              # returns BatchEncoding with masks
+    chat_template=None,            # override Jinja2 string (optional)
+    add_special_tokens=True,       # add BOS/EOS (set False for non-chat)
+)
+\end{lstlisting}
+
+\subsection{Parameter Deep-Dive}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{>{\ttfamily\color{primaryBlue}}p{5.2cm} X}
+\toprule
+\normalfont\textbf{Parameter} & \textbf{Behaviour \& Notes} \\
+\midrule
+messages & List of role dicts: \texttt{\{"role": "system|user|assistant", "content": "..."\}}. Must contain at least one user message. \\
+\addlinespace
+tokenize=False & Returns a formatted \textbf{string}. Use this for debugging --- always inspect the string before running inference. \\
+\addlinespace
+tokenize=True & Returns a \textbf{BatchEncoding} containing \texttt{.input\_ids} (and masks if \texttt{return\_dict=True}). Shape: \texttt{[1, seq\_len]}. \\
+\addlinespace
+return\_tensors="pt" & PyTorch tensors. Also accepts \texttt{"tf"} (TensorFlow) and \texttt{"np"} (NumPy). Only active when \texttt{tokenize=True}. \\
+\addlinespace
+add\_generation\_prompt=True & \textbf{Critical for inference.} Appends the assistant role-starter token(s) at the end so the model knows to generate a new turn. Omit only during fine-tuning data preparation. \\
+\addlinespace
+return\_dict=True & Returns full \texttt{BatchEncoding} with \texttt{input\_ids} \emph{and} \texttt{attention\_mask}. Required for batched inference with padding. \\
+\addlinespace
+chat\_template & Override the model's Jinja2 template inline without modifying the tokenizer object. \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Output Types}
+
+\begin{tcolorbox}[notebox={Mode 1 --- Debug / Inspect}]
+\begin{lstlisting}[style=pycode, numbers=none]
+formatted = tokenizer.apply_chat_template(
+    messages, tokenize=False, add_generation_prompt=True
+)
+print(formatted)   # human-readable string -> verify format before inference
+\end{lstlisting}
+\end{tcolorbox}
+
+\begin{tcolorbox}[tipbox={Mode 2 --- Inference Ready}]
+\begin{lstlisting}[style=pycode, numbers=none]
+inputs = tokenizer.apply_chat_template(
+    messages, tokenize=True, return_tensors="pt",
+    add_generation_prompt=True, return_dict=True
+)
+# inputs.input_ids   -> torch.Tensor  [1, seq_len]
+# inputs.attention_mask -> torch.Tensor  [1, seq_len]
+outputs = model.generate(**inputs, max_new_tokens=200)
+response = tokenizer.decode(
+    outputs[0][inputs.input_ids.shape[-1]:],
+    skip_special_tokens=True
+)
+\end{lstlisting}
+\end{tcolorbox}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{ChatML Format --- The Dominant Standard}
+% ═════════════════════════════════════════════════════════════════════════════
+
+Most open-weight models --- SmolLM2, Qwen2.5, Llama-3.x, Mistral-v3, Phi-3, Gemma-2 --- use the \textbf{ChatML} format:
+
+\begin{lstlisting}[style=chatml]
+<|im_start|>role
+content<|im_end|>
+\end{lstlisting}
+
+\textbf{Special tokens in ChatML:}
+
+\begin{itemize}[noitemsep, topsep=2pt]
+  \item \tok{<|im\_start|>} --- Turn opener. Precedes every role block.
+  \item \tok{<|im\_end|>} --- Turn closer. Signals end of this role's content (often doubles as EOS).
+  \item BOS token --- Model-family specific (see \S5).
+  \item Generation prompt --- \tok{<|im\_start|>assistant\textbackslash n} appended by \texttt{add\_generation\_prompt=True}.
+\end{itemize}
+
+\subsection{Other Formats (for reference)}
+
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.2cm} X p{3.8cm}}
+\toprule
+Model Family & Format Pattern & Opener/Closer \\
+\midrule
+ChatML (majority) & \texttt{<|im\_start|>role\textbackslash ncontent<|im\_end|>} & \tok{<|im\_start|>} / \tok{<|im\_end|>} \\
+Llama-3.x & Header-based with \texttt{<|start\_header\_id|>} & \texttt{<|eot\_id|>} \\
+Mistral (old) & \texttt{[INST] user [/INST] assistant} & \texttt{[INST]} / \texttt{[/INST]} \\
+Zephyr & \texttt{<|system|>\textbackslash ncontent</s>} & \texttt{<|system|>} / \texttt{</s>} \\
+\bottomrule
+\end{tabularx}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Dry-Run Walkthrough}
+% ═════════════════════════════════════════════════════════════════════════════
+
+Given the following \texttt{messages} list:
+
+\begin{lstlisting}[style=pycode]
+messages = [
+    {"role": "system",    "content": "You are a helpful assistant."},
+    {"role": "user",      "content": "What is the capital of France?"},
+    {"role": "assistant", "content": "The capital of France is Paris."},
+    {"role": "user",      "content": "And what about Germany?"},
+]
+\end{lstlisting}
+
+\noindent\textbf{Step 1 --- Jinja2 renders each dict into a ChatML block:}
+
+\begin{lstlisting}[style=chatml]
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is the capital of France?<|im_end|>
+<|im_start|>assistant
+The capital of France is Paris.<|im_end|>
+<|im_start|>user
+And what about Germany?<|im_end|>
+\end{lstlisting}
+
+\noindent\textbf{Step 2 --- \texttt{add\_generation\_prompt=True} appends the assistant starter:}
+
+\begin{lstlisting}[style=chatml]
+<|im_start|>assistant
+^--- model starts generating here
+\end{lstlisting}
+
+\noindent\textbf{Step 3 --- Tokenization} (\texttt{tokenize=True, return\_tensors="pt"}):
+
+\begin{lstlisting}[style=chatml]
+SmolLM2  : shape [1, 55]  first_ids=[1, 9690, 273, ...]
+Qwen2.5  : shape [1, N]   first_ids=[151644, 8948, 198, ...]
+                                       ^--- <|im_start|> id differs!
+\end{lstlisting}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Cross-Model Token Comparison}
+% ═════════════════════════════════════════════════════════════════════════════
+
+Same ChatML markers \emph{visually} --- completely different integer IDs because each model has its own vocabulary.
+
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\linewidth}{>{\bfseries}l >{\ttfamily\color{primaryBlue}}X >{\ttfamily\color{teal}}X}
+\toprule
+\normalfont\textbf{Token} & SmolLM2-1.7B-Instruct & Qwen2.5-0.5B-Instruct \\
+\midrule
+BOS             & \textless s\textgreater{}             & \textless|endoftext|\textgreater{} \\
+EOS             & \textless/s\textgreater{}            & \textless|im\_end|\textgreater{} \\
+PAD             & \textless unk\textgreater{}          & \textless|endoftext|\textgreater{} \\
+UNK             & \textless unk\textgreater{}          & None \\
+\textless|im\_start|\textgreater{} id & 1                   & 151644 \\
+Vocab size      & $\sim$49152                         & $\sim$151936 \\
+\bottomrule
+\end{tabularx}
+
+\begin{tcolorbox}[alertbox={Critical Gotcha}]
+Always load the \textbf{per-model tokenizer}. Never share a tokenizer between model families. The same \tok{<|im\_start|>} string maps to different integer IDs --- mixing tokenizers silently corrupts model input and produces hallucinated/broken output.
+\end{tcolorbox}
+
+\subsection{Llama-3.x Specific: Date Injection}
+
+Llama-3.x templates automatically inject a \texttt{Today Date} field into the system prompt. This makes inputs \textbf{non-deterministic} by default --- a problem for caching:
+
+\begin{lstlisting}[style=pycode]
+# Override the date for deterministic / cached prompts
+tokenizer.apply_chat_template(
+    messages, tokenize=False,
+    date_string="23 Jan 2025"   # pin the date
+)
+# Or strip it from the rendered string if you cannot avoid it:
+prompt = prompt.replace("Cutting Knowledge Date: December 2023\nToday Date: 26 Jul 2024\n\n", "")
+\end{lstlisting}
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Multimodal Extension (2025)}
+% ═════════════════════════════════════════════════════════════════════════════
+
+Multimodal models (LLaVA, Qwen-VL, Idefics, etc.) extend the template with a \texttt{type} key in each content block. The method lives on the \textbf{Processor} class (not the tokenizer):
+
+\begin{lstlisting}[style=pycode]
+from transformers import AutoProcessor, LlavaOnevisionForConditionalGeneration
+
+processor = AutoProcessor.from_pretrained("llava-hf/llava-onevision-qwen2-0.5b-ov-hf")
+
+messages = [{
+    "role": "user",
+    "content": [
+        {"type": "image", "url": "http://example.com/cat.jpg"},
+        {"type": "text",  "text": "What do you see?"},
+    ]
+}]
+
+inputs = processor.apply_chat_template(
+    messages,
+    add_generation_prompt=True,
+    tokenize=True,
+    return_dict=True,
+    return_tensors="pt"
+)
+# inputs now contains both input_ids AND pixel_values
+outputs = model.generate(**inputs, max_new_tokens=100)
+\end{lstlisting}
+
+\noindent Supported \texttt{type} values: \val{"text"}, \val{"image"}, \val{"video"}.\\
+For video, pass \texttt{video\_load\_backend} parameter to control the video loading framework.
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Production Patterns}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\subsection{Full Inference Loop (Single Turn)}
+
+\begin{lstlisting}[style=pycode]
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.from_pretrained("HuggingFaceTB/SmolLM2-1.7B-Instruct")
+model = AutoModelForCausalLM.from_pretrained("HuggingFaceTB/SmolLM2-1.7B-Instruct",
+                                              torch_dtype=torch.bfloat16, device_map="auto")
+messages = [
+    {"role": "system",  "content": "You are a helpful assistant."},
+    {"role": "user",    "content": "Explain RAG in one sentence."},
+]
+
+inputs = tokenizer.apply_chat_template(
+    messages, tokenize=True, return_tensors="pt",
+    add_generation_prompt=True, return_dict=True
+)
+inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+outputs = model.generate(**inputs, max_new_tokens=200, do_sample=True, temperature=0.7)
+response = tokenizer.decode(
+    outputs[0][inputs["input_ids"].shape[-1]:],
+    skip_special_tokens=True
+)
+print(response)
+\end{lstlisting}
+
+\subsection{Multi-Turn Conversation Loop}
+
+\begin{lstlisting}[style=pycode]
+messages = [{"role": "system", "content": "You are a helpful assistant."}]
+
+while True:
+    user_input = input("You: ")
+    messages.append({"role": "user", "content": user_input})
+
+    inputs = tokenizer.apply_chat_template(
+        messages, tokenize=True, return_tensors="pt",
+        add_generation_prompt=True, return_dict=True
+    )
+    outputs = model.generate(**inputs, max_new_tokens=300)
+    response = tokenizer.decode(
+        outputs[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True
+    )
+    # Append assistant turn BACK into messages to maintain context
+    messages.append({"role": "assistant", "content": response})
+    print(f"Model: {response}")
+\end{lstlisting}
+
+\subsection{Custom / Override Template}
+
+\begin{lstlisting}[style=pycode]
+# Option A: mutate the tokenizer object (persists for all calls)
+tokenizer.chat_template = your_jinja2_string
+
+# Option B: pass inline per-call (no mutation)
+output = tokenizer.apply_chat_template(
+    messages, tokenize=False, chat_template=your_jinja2_string
+)
+
+# Option C: edit tokenizer_config.json on disk before loading
+# Useful when the model's template is buggy (e.g. wrong date injection)
+\end{lstlisting}
+
+\subsection{Fine-Tuning Data Preparation}
+
+\begin{lstlisting}[style=pycode]
+# During fine-tuning: include the assistant response in messages
+# and set add_generation_prompt=False
+messages = [
+    {"role": "user",      "content": "What is the capital of France?"},
+    {"role": "assistant", "content": "The capital of France is Paris."},
+]
+
+# Transformers >= 4.42: get label mask for SFT (ignore prompt tokens)
+result = tokenizer.apply_chat_template(
+    messages,
+    tokenize=True,
+    return_tensors="pt",
+    add_generation_prompt=False,
+    return_dict=True,
+    return_assistant_tokens_mask=True,  # mask non-assistant tokens from loss
+)
+# result["assistant_masks"] -> 1 where loss should be computed
+\end{lstlisting}
+
+\subsection{LangChain Integration}
+
+When using \texttt{HuggingFacePipeline} in LangChain, \api{apply\_chat\_template()} is called \textbf{automatically} under the hood when the model is a chat/instruction model. You do not need to call it manually --- just pass your messages and LangChain handles the rest.
+
+% ═════════════════════════════════════════════════════════════════════════════
+\section{Pro Tips for AI Engineering}
+% ═════════════════════════════════════════════════════════════════════════════
+
+\begin{tcolorbox}[notebox={Debug-First Workflow}]
+\textbf{Always} inspect the formatted string before feeding tensors to the model:
+\begin{lstlisting}[style=pycode, numbers=none]
+print(tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True))
+\end{lstlisting}
+This costs nothing and catches format bugs instantly.
+\end{tcolorbox}
+
+\begin{itemize}[noitemsep, topsep=4pt, leftmargin=1.2em]
+
+  \item \textbf{\texttt{add\_generation\_prompt=True} is mandatory for inference.}
+    Omitting it causes the model to try to continue the conversation rather than generate a fresh assistant turn. Symptoms: repeated content, wrong role, or immediate EOS.
+
+  \item \textbf{Use \texttt{return\_dict=True} for batched inference.}
+    Without the \texttt{attention\_mask} returned by \texttt{return\_dict=True}, padding in batches is ignored and generation quality degrades.
+
+  \item \textbf{\texttt{return\_assistant\_tokens\_mask=True} for SFT.}
+    Available from Transformers $\ge$ 4.42. Automatically generates the loss mask that suppresses gradients on prompt tokens --- replaces manual label masking logic.
+
+  \item \textbf{Never mix tokenizers across model families.}
+    The same special token string maps to different integer IDs per vocab. Load \texttt{AutoTokenizer.from\_pretrained(model\_name)} for each model individually.
+
+  \item \textbf{Messages list must contain at least one user message.}
+    A system-only \texttt{messages} list raises a Jinja2 rendering error in most templates.
+
+  \item \textbf{Slice outputs to get only the new tokens:}
+    \texttt{outputs[0][inputs["input\_ids"].shape[-1]:]} strips the echoed prompt from the generated sequence.
+
+  \item \textbf{For RAG pipelines:} inject retrieved context into the \texttt{system} role content or prepend it to the first \texttt{user} message. The template handles token budget automatically across the full conversation window.
+
+  \item \textbf{Customise templates carefully.}
+    If you edit \texttt{tokenizer.chat\_template}, test with \texttt{tokenize=False} first, verify the rendered string against the model's expected format, then re-enable tokenisation.
+
+\end{itemize}
+
+% ── Quick reference card ──────────────────────────────────────────────────────
+\vspace{6pt}
+\noindent\color{borderGray}\rule{\linewidth}{0.4pt}
+\vspace{2pt}
+
+\begin{tcolorbox}[
+  colback=codeBg, colframe=borderGray,
+  title={\color{darkText}\bfseries Quick Reference --- apply\_chat\_template()},
+  fonttitle=\bfseries
+]
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\ttfamily\footnotesize\color{primaryBlue}}p{5.5cm} >{\footnotesize}X}
+\toprule
+\normalfont\textbf{Call} & \textbf{Returns / Use case} \\
+\midrule
+apply\_chat\_template(m, tokenize=False) & Formatted string --- debug \\
+apply\_chat\_template(m, tokenize=True, return\_tensors="pt") & Bare tensor \texttt{input\_ids} \\
+apply\_chat\_template(m, return\_dict=True) & BatchEncoding with masks --- batching \\
+apply\_chat\_template(m, add\_generation\_prompt=True) & Add assistant starter --- inference \\
+apply\_chat\_template(m, add\_generation\_prompt=False) & No suffix --- fine-tuning data \\
+apply\_chat\_template(m, return\_assistant\_tokens\_mask=True) & SFT loss mask (HF $\ge$ 4.42) \\
+apply\_chat\_template(m, date\_string="...") & Override Llama-3 date injection \\
+\bottomrule
+\end{tabularx}
+\end{tcolorbox}
+
+\vspace{4pt}
+\begin{center}
+  \small\color{mutedText}
+  Source: HuggingFace Transformers Docs $\cdot$
+  \href{https://huggingface.co/docs/transformers/en/chat_templating}{docs/transformers/chat\_templating} $\cdot$
+  Compiled April 2026
+\end{center}
+
+\end{document}
