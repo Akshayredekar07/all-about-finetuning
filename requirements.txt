@@ -18,3 +18,4 @@ soundfile
 torchcodec
 librosa
 sentencepiece
+evaluate
